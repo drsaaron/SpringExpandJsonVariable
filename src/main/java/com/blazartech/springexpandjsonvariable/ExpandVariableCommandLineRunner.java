@@ -7,8 +7,9 @@ package com.blazartech.springexpandjsonvariable;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
@@ -56,10 +57,9 @@ public class ExpandVariableCommandLineRunner implements CommandLineRunner {
     private static final String PREFIX = "sample.data";
     
     public Map<String, Object> getVariablesMap(Map<String, String> properties) {
-        Map<String, Object> variables = new HashMap<>();
-        properties.keySet().stream()
-                .filter(k -> !k.equals("file"))
-                .forEach(k -> variables.put(PREFIX + "." + k, properties.get(k)));
+        Map<String, Object> variables = properties.entrySet().stream()
+                .filter(v -> !v.getKey().equals("file"))
+                .collect(Collectors.toMap(v -> PREFIX + "." + v.getKey(), Entry::getValue));
         log.info("variables = {}", variables);
         
         return variables;

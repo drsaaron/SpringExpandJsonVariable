@@ -5,6 +5,7 @@
 package com.blazartech.springexpandjsonvariable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -74,14 +75,16 @@ public class ExpandVariableCommandLineRunnerTest {
     public void tearDown() {
     }
 
-    private String readTestJson() throws Exception {
-        String json = new String(testJsonResource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+    private String readJson(Resource resource) throws IOException {
+        String json = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         return json;
     }
+    private String readTestJson() throws IOException {
+        return readJson(testJsonResource);
+    }
     
-    private String readExpectedJson() throws Exception {
-        String json = new String(expectedJsonResource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        return json;
+    private String readExpectedJson() throws IOException {
+        return readJson(expectedJsonResource);
     }
     
     /**
@@ -113,6 +116,8 @@ public class ExpandVariableCommandLineRunnerTest {
         Map<String, Object> result = instance.getVariablesMap(PROPERTIES);
         
         assertEquals(2, result.size());
+        assertTrue(result.containsKey("sample.data.name"));
+        assertTrue(result.containsKey("sample.data.age"));
     }
 
 
