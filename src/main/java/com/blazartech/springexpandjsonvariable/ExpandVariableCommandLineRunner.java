@@ -53,6 +53,18 @@ public class ExpandVariableCommandLineRunner implements CommandLineRunner {
         return substitutor.replace(jsonString);
     }
 
+    private static final String PREFIX = "sample.data";
+    
+    public Map<String, Object> getVariablesMap(Map<String, String> properties) {
+        Map<String, Object> variables = new HashMap<>();
+        properties.keySet().stream()
+                .filter(k -> !k.equals("file"))
+                .forEach(k -> variables.put(PREFIX + "." + k, properties.get(k)));
+        log.info("variables = {}", variables);
+        
+        return variables;
+    }
+    
     @Override
     public void run(String... args) throws Exception {
         log.info("loading data");
@@ -60,18 +72,13 @@ public class ExpandVariableCommandLineRunner implements CommandLineRunner {
         // read the environment for all variables starting with sample.data, and add to a map
         // that will be used for expansion.  This allows new varaibles to be added without 
         // changing code.  see https://stackoverflow.com/questions/47873185/how-to-read-multiple-spring-properties-with-same-prefix-in-java
-        String prefix = "sample.data";
         Map<String, String> properties = Binder.get(applicationContext.getEnvironment())
-                .bind(prefix, Bindable.mapOf(String.class, String.class))
+                .bind(PREFIX, Bindable.mapOf(String.class, String.class))
                 .orElse(Collections.emptyMap());
         properties.keySet().stream()
-                .forEach(k -> log.info("property {} with value {}", prefix + "." + k, properties.get(k)));
+                .forEach(k -> log.info("property {} with value {}", PREFIX + "." + k, properties.get(k)));
 
-        Map<String, Object> variables = new HashMap<>();
-        properties.keySet().stream()
-                .filter(k -> !k.equals("file"))
-                .forEach(k -> variables.put(prefix + "." + k, properties.get(k)));
-        log.info("variables = {}", variables);
+        Map<String, Object> variables = getVariablesMap(properties);
 
 //        Map<String, Object> variables = Map.of("sample.data.name", sampleName, "sample.data.age", sampleAge);
         // read the json file into a string

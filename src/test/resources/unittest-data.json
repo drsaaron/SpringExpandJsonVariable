@@ -1,0 +1,12 @@
+[
+    {
+        "id": 1,
+        "name": "dude",
+        "age": 15
+    },
+    {
+        "id": 2,
+        "name": "${sample.data.name}",
+        "age": "${sample.data.age}"
+    }
+]
