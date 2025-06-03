@@ -40,12 +40,6 @@ public class ExpandVariableCommandLineRunner implements CommandLineRunner {
     @Value("${sample.data.file}")
     private String dataFile;
 
-    @Value("${sample.data.name}")
-    private String sampleName;
-
-    @Value("${sample.data.age}")
-    private Integer sampleAge;
-
     @Autowired
     private ConfigurableApplicationContext applicationContext;
 
@@ -65,22 +59,29 @@ public class ExpandVariableCommandLineRunner implements CommandLineRunner {
         return variables;
     }
     
-    @Override
-    public void run(String... args) throws Exception {
-        log.info("loading data");
-
+    public Map<String, String> getEnvironmentProperties(ConfigurableApplicationContext applicationContext, String prefix) {
         // read the environment for all variables starting with sample.data, and add to a map
         // that will be used for expansion.  This allows new varaibles to be added without 
         // changing code.  see https://stackoverflow.com/questions/47873185/how-to-read-multiple-spring-properties-with-same-prefix-in-java
         Map<String, String> properties = Binder.get(applicationContext.getEnvironment())
-                .bind(PREFIX, Bindable.mapOf(String.class, String.class))
+                .bind(prefix, Bindable.mapOf(String.class, String.class))
                 .orElse(Collections.emptyMap());
         properties.keySet().stream()
-                .forEach(k -> log.info("property {} with value {}", PREFIX + "." + k, properties.get(k)));
+                .forEach(k -> log.info("property {} with value {}", prefix + "." + k, properties.get(k)));
+        
+        return properties;
+    }
+    
+    @Override
+    public void run(String... args) throws Exception {
+        log.info("loading data");
 
+        // read the properties starting with PREFIX into a map
+        Map<String, String> properties = getEnvironmentProperties(applicationContext, PREFIX);
+
+        // build a map to be used for substitution
         Map<String, Object> variables = getVariablesMap(properties);
 
-//        Map<String, Object> variables = Map.of("sample.data.name", sampleName, "sample.data.age", sampleAge);
         // read the json file into a string
         Resource resource = resourceLoader.getResource(dataFile);
         String json = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
@@ -89,8 +90,6 @@ public class ExpandVariableCommandLineRunner implements CommandLineRunner {
         String expandedJson = replaceVariables(json, variables);
         log.info("read json {}", expandedJson);
 
-        //  SampleData[] data = objectMapper.readValue(resource.getInputStream(), SampleData[].class);
-        //  Stream.of(data).forEach(d -> log.info("read datum {}", d));
         // deserialize
         SampleData[] data2 = objectMapper.readValue(expandedJson, SampleData[].class);
         Stream.of(data2).forEach(d -> log.info("read expanded datum {}", d));

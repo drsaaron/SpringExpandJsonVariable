@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.Resource;
@@ -120,6 +121,19 @@ public class ExpandVariableCommandLineRunnerTest {
         assertTrue(result.containsKey("sample.data.age"));
     }
 
-
+    @Autowired
+    private ConfigurableApplicationContext applicationContext;
+    
+    @Test
+    public void testGetEnvironmentProperties() {
+        log.info("getEnvironmentProperties");
+        
+        Map<String, String> properties = instance.getEnvironmentProperties(applicationContext, "unittest.sample.data");
+        assertNotNull(properties);
+        assertFalse(properties.isEmpty());
+        assertEquals(7, properties.size());
+        assertTrue(properties.containsKey("extraProperty1"));
+        assertEquals("extra1", properties.get("extraProperty1"));
+    }
     
 }
