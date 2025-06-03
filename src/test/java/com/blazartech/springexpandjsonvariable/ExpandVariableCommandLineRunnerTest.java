@@ -96,7 +96,7 @@ public class ExpandVariableCommandLineRunnerTest {
         log.info("replaceVariables");
         
         String jsonString = readTestJson();
-        Map<String, Object> properties = instance.getVariablesMap(PROPERTIES);
+        Map<String, Object> properties = instance.getVariablesMap(PROPERTIES, "sample.data");
 
         String expResult = readExpectedJson();
         String result = instance.replaceVariables(jsonString, properties);
@@ -114,7 +114,7 @@ public class ExpandVariableCommandLineRunnerTest {
     public void testGetVariablesMap() {
         log.info("getVariablesMap");
 
-        Map<String, Object> result = instance.getVariablesMap(PROPERTIES);
+        Map<String, Object> result = instance.getVariablesMap(PROPERTIES, "sample.data");
         
         assertEquals(2, result.size());
         assertTrue(result.containsKey("sample.data.name"));

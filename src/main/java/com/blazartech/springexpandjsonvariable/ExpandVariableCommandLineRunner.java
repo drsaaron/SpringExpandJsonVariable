@@ -50,10 +50,10 @@ public class ExpandVariableCommandLineRunner implements CommandLineRunner {
 
     private static final String PREFIX = "sample.data";
     
-    public Map<String, Object> getVariablesMap(Map<String, String> properties) {
+    public Map<String, Object> getVariablesMap(Map<String, String> properties, String prefix) {
         Map<String, Object> variables = properties.entrySet().stream()
                 .filter(v -> !v.getKey().equals("file"))
-                .collect(Collectors.toMap(v -> PREFIX + "." + v.getKey(), Entry::getValue));
+                .collect(Collectors.toMap(v -> prefix + "." + v.getKey(), Entry::getValue));
         log.info("variables = {}", variables);
         
         return variables;
@@ -80,7 +80,7 @@ public class ExpandVariableCommandLineRunner implements CommandLineRunner {
         Map<String, String> properties = getEnvironmentProperties(applicationContext, PREFIX);
 
         // build a map to be used for substitution
-        Map<String, Object> variables = getVariablesMap(properties);
+        Map<String, Object> variables = getVariablesMap(properties, PREFIX);
 
         // read the json file into a string
         Resource resource = resourceLoader.getResource(dataFile);
