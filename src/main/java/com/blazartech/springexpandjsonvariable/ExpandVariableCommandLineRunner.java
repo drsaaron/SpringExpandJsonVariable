@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
@@ -41,7 +41,7 @@ public class ExpandVariableCommandLineRunner implements CommandLineRunner {
     private String dataFile;
 
     @Autowired
-    private ConfigurableApplicationContext applicationContext;
+    private ApplicationContext applicationContext;
 
     public String replaceVariables(String jsonString, Map<String, Object> properties) {
         StringSubstitutor substitutor = new StringSubstitutor(properties);
@@ -59,15 +59,14 @@ public class ExpandVariableCommandLineRunner implements CommandLineRunner {
         return variables;
     }
     
-    public Map<String, String> getEnvironmentProperties(ConfigurableApplicationContext applicationContext, String prefix) {
+    public Map<String, String> getEnvironmentProperties(ApplicationContext applicationContext, String prefix) {
         // read the environment for all variables starting with sample.data, and add to a map
         // that will be used for expansion.  This allows new varaibles to be added without 
         // changing code.  see https://stackoverflow.com/questions/47873185/how-to-read-multiple-spring-properties-with-same-prefix-in-java
         Map<String, String> properties = Binder.get(applicationContext.getEnvironment())
                 .bind(prefix, Bindable.mapOf(String.class, String.class))
                 .orElse(Collections.emptyMap());
-        properties.keySet().stream()
-                .forEach(k -> log.info("property {} with value {}", prefix + "." + k, properties.get(k)));
+        properties.keySet().forEach(k -> log.info("property {} with value {}", prefix + "." + k, properties.get(k)));
         
         return properties;
     }
