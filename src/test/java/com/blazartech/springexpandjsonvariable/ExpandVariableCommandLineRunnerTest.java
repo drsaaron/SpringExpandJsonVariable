@@ -125,8 +125,8 @@ public class ExpandVariableCommandLineRunnerTest {
         documentContext = JsonPath.parse(result);
         String secondName = documentContext.read(variableNamePath);
         int secondAge = documentContext.read(variableAgePath, Integer.class);
-        assertEquals(secondName, "joe");
-        assertEquals(18, secondAge);
+        assertEquals(PROPERTIES.get("name"), secondName);
+        assertEquals(Integer.valueOf(PROPERTIES.get("age")), secondAge);
     }
 
     private static final Map<String, String> PROPERTIES = Map.of("file", "myfile", "name", "joe", "age", "18");
