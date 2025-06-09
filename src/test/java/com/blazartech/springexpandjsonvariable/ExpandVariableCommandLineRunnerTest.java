@@ -5,6 +5,8 @@
 package com.blazartech.springexpandjsonvariable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -95,14 +97,36 @@ public class ExpandVariableCommandLineRunnerTest {
     public void testReplaceVariables() throws Exception {
         log.info("replaceVariables");
         
+        // json paths to the name and age variable elements
+        String variableNamePath = "$[1].name";
+        String variableAgePath = "$[1].age";
+        
+        // read the test data and verify nothing is expanded
         String jsonString = readTestJson();
+        DocumentContext documentContext = JsonPath.parse(jsonString);
+        assertEquals("${sample.data.name}", documentContext.read(variableNamePath));
+        assertEquals("${sample.data.age}", documentContext.read(variableAgePath));
+        
         Map<String, Object> properties = instance.getVariablesMap(PROPERTIES, "sample.data");
 
+        // read the expected json
         String expResult = readExpectedJson();
+        
+        // do the deed and expand
         String result = instance.replaceVariables(jsonString, properties);
         log.info("result = {}", result);
         
+        // the expanded string should match the hard-coded expanded string
         assertEquals(expResult, result);
+        
+        /* parse the json and check specific fields.  we've already compared the final
+           json string, but this demonstrates the use of jsonpath.
+        */
+        documentContext = JsonPath.parse(result);
+        String secondName = documentContext.read(variableNamePath);
+        int secondAge = documentContext.read(variableAgePath, Integer.class);
+        assertEquals(secondName, "joe");
+        assertEquals(18, secondAge);
     }
 
     private static final Map<String, String> PROPERTIES = Map.of("file", "myfile", "name", "joe", "age", "18");
